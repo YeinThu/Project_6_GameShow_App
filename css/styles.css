@@ -55,6 +55,10 @@ button {
   transition: var(--transition);
 }
 
+button:hover {
+  cursor: pointer;
+}
+
 .main-container {
   display: flex;
   flex-direction: column;
@@ -97,6 +101,22 @@ button {
   background-color: #76CE82;
 }
 
+/* Custom Wiggle Animation For Correct Letters */
+.wiggle {
+  animation: wiggle .1s ease;
+  animation-iteration-count: 3;
+}
+
+@keyframes wiggle {
+  from {
+      transform: rotate(-4deg);
+  }
+  
+  to {
+      transform: rotate(4deg);
+  }
+}
+
 /* Keyboard */
 
 .keyrow {
@@ -117,6 +137,10 @@ button {
   background: #FFFFFF;
   border-radius: 5px;
   font-size: var(--font-size-medium);
+}
+
+.btn__reset:hover {
+  cursor: pointer;
 }
 
 /* Overlay */
