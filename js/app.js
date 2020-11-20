@@ -5,10 +5,10 @@ const buttonStart = document.querySelector('.btn__reset');
 const overlay = document.querySelector('#overlay');
 const phrases = [
   'up up and away',
-  // 'tuning in',
-  // 'feel the beat',
-  // 'day and night',
-  // 'shine bright'
+  'tuning in',
+  'feel the beat',
+  'day and night',
+  'shine bright'
 ];
 let missedGuesses = 0;
 let gameState = null;
