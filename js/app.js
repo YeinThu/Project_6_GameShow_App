@@ -1,41 +1,26 @@
-// DOM Elements & Variables
-const phrase = document.querySelector('#phrase');
+// Variables & DOM Elements
 const qwerty = document.querySelector('#qwerty');
-const startGameBtn = document.querySelector('.btn__reset');
+const phrase = document.querySelector('#phrase');
+const buttonStart = document.querySelector('.btn__reset');
+const overlay = document.querySelector('#overlay');
 const phrases = [
   'up up and away',
-  'tuning in',
-  'feel the beat',
-  'day and night',
-  'shine bright'
+  // 'tuning in',
+  // 'feel the beat',
+  // 'day and night',
+  // 'shine bright'
 ];
 let missedGuesses = 0;
+let gameState = null;
 
+// // ------------------------------ Data Functions ------------------------------ >
 // Get Random Phrase From Array
-const getRandomPhrase = arr => {
+const getRandomPhrase = (arr) => {
   const randomNum = Math.floor(Math.random() * phrases.length);
   const randomPhrase = phrases[randomNum];
 
   return randomPhrase;
-}
-
-// Add Letters Of Phrase To Display
-const addPhraseToDisplay = (phr) => {
-  const phrArr = phr.split('');
-  const ul = phrase.querySelector('ul');
-  let html = '';
-
-  phrArr.forEach(char => {
-    if (char === ' ') { 
-      html += `<li class="space"></li>`
-    } else {
-      html += `<li class="letter">${char}</li>`;
-    }
-    
-  });
-
-  ul.innerHTML = html;
-}
+};
 
 // Check For Letter In Phrase
 const checkLetter = (button) => {
@@ -53,45 +38,27 @@ const checkLetter = (button) => {
   }
 
   return match;
-}
+};
 
-// Check If Game Has Been Won / Lost
+// Check For Win or Lose
 const checkWin = () => {
   const letterLis = phrase.querySelectorAll('ul .letter');
   const showLis = phrase.querySelectorAll('ul .show');
-  const overlay = document.querySelector('#overlay');
+  let result = '';
 
   if (letterLis.length === showLis.length) {
-    overlay.className = 'win';
-    startGameBtn.textContent = 'Play Again';
-    overlay.querySelector('.message').textContent = 'You\'ve Won!';
-    overlay.style.display = 'flex';
-  } 
-  else if (missedGuesses > 4) {
-    overlay.className = 'lose';
-    startGameBtn.textContent = 'Play Again';
-    overlay.querySelector('.message').textContent = 'You\'ve Lost...';
-    overlay.style.display = 'flex';
+    result = 'win';
+  }
+  else if (missedGuesses >= 5) {
+    result = 'lose';
   }
 
-  startGameBtn.addEventListener('click', resetGame);
-}
+  return result;
+};
 
-// Listen For Start Game Button Click
-startGameBtn.addEventListener('click', () => {
-  // Hide Overlay
-  const overlay = document.querySelector('#overlay');
-  overlay.style.display = 'none';
-
-  // Display Phrase
-  const phr = getRandomPhrase(phrases);
-  addPhraseToDisplay(phr);
-
-});
-
-// Reset Game
-const resetGame = () => {
-  // Set Missed Guess To 0
+// Game Reset
+const gameReset = () => {
+  // Set Missed Guesses To 0
   missedGuesses = 0;
 
   // Fill Live Hearts
@@ -100,7 +67,6 @@ const resetGame = () => {
     liveHearts[i].src = 'images/liveHeart.png';
   }
 
-  // Refresh Keyboard
   qwerty.innerHTML = `
   <div class="keyrow">
     <button>q</button><button>w</button><button>e</button><button>r</button><button>t</button><button>y</button><button>u</button><button>i</button><button>o</button><button>p</button>
@@ -112,29 +78,90 @@ const resetGame = () => {
     <button>z</button><button>x</button><button>c</button><button>v</button><button>b</button><button>n</button><button>m</button>
   </div>
   `;
+};
+
+// ------------------------------ UI Functions ------------------------------ >
+
+// UI Functions
+// Overlay Display Depending On State Of Game
+const overlayDisplay = (gameState) => {
+
+  if (gameState === 'win') {
+    overlay.className = 'win';
+    overlay.querySelector('.btn__reset').textContent = 'Play Again';
+    overlay.style.display = 'flex';
+    document.querySelector('.result').textContent = `You Win!`;
+    gameReset();
+  }
+  else if (gameState === 'lose') {
+    overlay.className = 'lose';
+    overlay.querySelector('.btn__reset').textContent = 'Play Again';
+    overlay.style.display = 'flex';
+    document.querySelector('.result').textContent = `You Lose!`;
+    gameReset();
+  }
+
 }
 
-// Listen For OnScreen Keyboard Click
-qwerty.addEventListener('click', e => {
-  if (e.target.tagName === 'BUTTON') {
-    // Get Letter User Clicked On
-    const userValue = e.target;
+// Add Phrase To Display On Board
+const addPhraseToDisplay = (newPhrase) => {
+  newPhrase = newPhrase.split('');
+  const ul = phrase.querySelector('ul');
+  let html = '';
+  
+  newPhrase.forEach((char) => {
+    if (char === ' ') {
+      html+= `<li class="space"></li>`;
+    }
+    else {
+      html+= `<li class="letter">${char}</li>`;
+    }
+  });
 
+  ul.innerHTML = html;
+};
+
+// ------------------------------ Event Listeners ------------------------------ >
+// Start Game
+overlay.addEventListener('click', (e) => {
+  const target = e.target;
+
+  if (target === buttonStart) {
+    // Hide Overlay
+    overlay.style.display = 'none';
+    // Get Random Phrase
+    const randomPhrase = getRandomPhrase(phrases);
+    // Display Random Phrase
+    addPhraseToDisplay(randomPhrase);
+  }
+})
+
+// Letter Guess
+qwerty.addEventListener('click', (e) => {
+  const target = e.target;
+
+  if (target.tagName === 'BUTTON') {
     // Add Class & Disabled To Button
-    userValue.classList += ' chosen';
-    userValue.setAttribute('disabled', 'true');
+    target.classList += ' chosen';
+    target.setAttribute('disabled', 'true');
 
     // Call Check Letter
-    if (!checkLetter(userValue)) {
-      userValue.style.backgroundColor = 'orange';
+    if (!checkLetter(target)) {
+      target.style.backgroundColor = 'orange';
       missedGuesses++;
 
       // Subtract Heart
       let liveHearts = document.querySelectorAll('.tries img');
       liveHearts[`${missedGuesses - 1}`].src = 'images/lostHeart.png';
-    }
+    };
   }
 
-  checkWin();
+  // Get Result
+  const result = checkWin();
+  
+  overlayDisplay(result);
+  
 })
+
+
 
